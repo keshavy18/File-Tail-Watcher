@@ -1,5 +1,124 @@
-Hello World
-Hello Air
-Hello Leaves
-Hello Tree
-Hello Hooomans
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: deschedulerpolicies.descheduler.sigs.k8s.io
+spec:
+  group: descheduler.sigs.k8s.io
+  version: v1alpha2
+  names:
+    kind: DeschedulerPolicy
+    plural: deschedulerpolicies
+    singular: deschedulerpolicy
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      type: object
+      properties:
+        apiVersion:
+          type: string
+        kind:
+          type: string
+        metadata:
+          type: object
+          properties:
+            name:
+              type: string
+              minLength: 1
+              maxLength: 253
+              pattern: "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+            namespace:
+              type: string
+        spec:
+          type: object
+          properties:
+            evictLocalStoragePods:
+              type: boolean
+            evictSystemCriticalPods:
+              type: boolean
+            strategies:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    enum:
+                      - PodLifeTime
+                      - RemovePodsViolatingNodeTaints
+                      - RemovePodsHavingTooManyRestarts
+                      - RemoveDuplicates
+                      - RemovePodsNotViolatingAntiAffinity
+                      - RemovePodsHavingTooManyTerminatedStatuses
+                      - RemovePodsInUnknownState
+                      - RemovePodsStuckToNode
+                      - PodTopologySpread
+                  enabled:
+                    type: boolean
+                  params:
+                    type: object
+                    properties:
+                      failedPods:
+                        type: object
+                        properties:
+                          includingInitContainers:
+                            type: boolean
+                          minPodLifetimeSeconds:
+                            type: integer
+                      podsHavingTooManyRestarts:
+                        type: object
+                        properties:
+                          includingInitContainers:
+                            type: boolean
+                          podRestartThreshold:
+                            type: integer
+                      podsNotViolatingAntiAffinity:
+                        type: object
+                        properties:
+                          includingInitContainers:
+                            type: boolean
+                      podsWithTooManyTerminatedStatuses:
+                        type: object
+                        properties:
+                          includingInitContainers:
+                            type: boolean
+                          terminationHistoryLimit:
+                            type: integer
+                      topologySpread:
+                        type: object
+                        properties:
+                          defaultConstraints:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                labelSelector:
+                                  type: object
+                                maxSkew:
+                                  type: integer
+                                topologyKey:
+                                  type: string
+                                whenUnsatisfiable:
+                                  type: string
+                                  enum:
+                                    - DoNotSchedule
+                                    - ScheduleAnyway
+                                    - ScheduleWithWarning
+                          podTopologySpreadConstraints:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                labelSelector:
+                                  type: object
+                                maxSkew:
+                                  type: integer
+                                topologyKey:
+                                  type: string
+                                whenUnsatisfiable:
+                                  type: string
+                                  enum:
+                                    - DoNotSchedule
+                                    - ScheduleAnyway
+                                    - ScheduleWithWarning
